@@ -74,6 +74,13 @@ sudo dnf install git gcc gobject-introspection-devel cairo-gobject-devel pkg-con
     pipx ensurepath && \
     pipx install git+https://github.com/AlfredoSequeida/hints.git
 ```
+Fedora Silverblue
+
+```
+rpm-ostree install python3-gobject python3-dbus gtk4
+    export HINTS_EXPECTED_BIN_DIR="$HOME/.local/bin"
+    pipx install git+https://github.com/AlfredoSequeida/hints.git
+```
 
 Arch
 
