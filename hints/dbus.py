@@ -1,5 +1,8 @@
 from gi.repository import Gio, GLib
 from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DBusHintsProxy:
     _instance = None
@@ -45,8 +48,8 @@ class DBusHintsProxy:
                         timeout_msec = 500,
                         cancellable = None
                     )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Failed to position window via DBus: %s", e)
 
     @classmethod
     def get_instance(cls):
