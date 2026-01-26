@@ -339,8 +339,9 @@ class AtspiBackend(HintsBackend):
                             return current_window
 
                         # Fallback logic for Flatpaks where PID namespace differs
+                        # Don't return immediately - save as candidate and keep looking for a better PID match
                         if n_app and n_target and (n_target in n_app or n_app in n_target):
-                            return current_window # Early return on match!
+                            active_window_candidate = current_window
                 except Exception as e:
                     logger.debug("Error checking window state/PID: %s", e)
                     continue
