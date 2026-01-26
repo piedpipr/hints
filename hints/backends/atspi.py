@@ -288,6 +288,8 @@ class AtspiBackend(HintsBackend):
         :return: Atspi focused window / accessible root element.
         """
         desktop = Atspi.get_desktop(0)
+        active_window_candidate = None
+
         for app_index in range(desktop.get_child_count()):
             window = desktop.get_child_at_index(app_index)
             # Gnome creates a mutter application that is also focused.
@@ -300,14 +302,22 @@ class AtspiBackend(HintsBackend):
                 # (like discord) will still have the Atspi.StateType.Active
                 # state, so the pid from the window manger allows us to filter
                 # out such applications.
-                if (
-                    current_window.get_state_set().contains(Atspi.StateType.ACTIVE)
-                    and current_window.get_process_id()
-                    == self.window_system.focused_window_pid
-                ):
-                    return current_window
+                if current_window.get_state_set().contains(Atspi.StateType.ACTIVE):
+                    if (
+                        current_window.get_process_id()
+                        == self.window_system.focused_window_pid
+                    ):
+                        return current_window
 
-        return None
+                    # Fallback logic for Flatpaks where PID namespace differs
+                    if (
+                        self.window_system.focused_applicaiton_name
+                        and window.get_name().lower()
+                        in self.window_system.focused_applicaiton_name.lower()
+                    ):
+                        active_window_candidate = current_window
+
+        return active_window_candidate
 
     def get_children(
         self,
