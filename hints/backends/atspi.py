@@ -301,8 +301,14 @@ class AtspiBackend(HintsBackend):
                 except Exception:
                     continue
                     
-                if app_name and target_name.lower() not in app_name.lower() and app_name.lower() not in target_name.lower():
-                     continue
+                # Normalize names for comparison (remove spaces/hyphens, lower case)
+                # e.g. "brave-browser" vs "Brave Browser"
+                if app_name:
+                    n_app = app_name.lower().replace("-", "").replace(" ", "").replace("_", "")
+                    n_target = target_name.lower().replace("-", "").replace(" ", "").replace("_", "")
+                    
+                    if n_target not in n_app and n_app not in n_target:
+                         continue
 
             # Gnome creates a mutter application that is also focused.
             # This is not what we want, so we are skipping it.
@@ -332,8 +338,7 @@ class AtspiBackend(HintsBackend):
                         if (
                             target_name
                             and app_name
-                            and app_name.lower()
-                            in target_name.lower()
+                            and (n_target in n_app or n_app in n_target)
                         ):
                             return current_window # Early return on match!
                 except Exception as e:
