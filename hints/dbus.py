@@ -41,9 +41,11 @@ class DBusHintsProxy:
                         GLib.Variant.new_int32(pid),
                     ),
                     flags = Gio.DBusCallFlags.NONE,
-                    timeout_msec = 5,
+                    timeout_msec = 500,
                     cancellable = None
                 )
+        except Exception:
+            pass
 
     @classmethod
     def get_instance(cls):
