@@ -292,17 +292,26 @@ class AtspiBackend(HintsBackend):
 
         for app_index in range(desktop.get_child_count()):
             window = desktop.get_child_at_index(app_index)
-            # Gnome creates a mutter application that is also focused.
-            # This is not what we want, so we are skipping it.
-            if "mutter-x11-frames" in window.get_description():
-                continue
             # Optimization: If we know the target application name, skip apps that clearly don't match.
             # This avoids traversing/querying unrelated apps (which can be slow, e.g. gnome-shell).
             target_name = self.window_system.focused_applicaiton_name
             if target_name:
-                app_name = window.get_name()
+                try:
+                    app_name = window.get_name()
+                except Exception:
+                    continue
+                    
                 if app_name and target_name.lower() not in app_name.lower() and app_name.lower() not in target_name.lower():
                      continue
+
+            # Gnome creates a mutter application that is also focused.
+            # This is not what we want, so we are skipping it.
+            # Checking description can be slow, so we do it after name filtering.
+            try:
+                if "mutter-x11-frames" in window.get_description():
+                    continue
+            except Exception:
+                pass
 
             for window_index in range(window.get_child_count()):
                 current_window = window.get_child_at_index(window_index)
@@ -326,7 +335,7 @@ class AtspiBackend(HintsBackend):
                             and app_name.lower()
                             in target_name.lower()
                         ):
-                            active_window_candidate = current_window
+                            return current_window # Early return on match!
                 except Exception as e:
                     logger.debug("Error checking window state/PID: %s", e)
                     continue
