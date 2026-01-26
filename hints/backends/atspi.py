@@ -292,23 +292,27 @@ class AtspiBackend(HintsBackend):
 
         for app_index in range(desktop.get_child_count()):
             window = desktop.get_child_at_index(app_index)
+            # Get app name and normalize it once per app
+            app_name = None
+            n_app = ""
+            n_target = ""
+            
+            try:
+                app_name = window.get_name()
+            except Exception:
+                continue
+            
             # Optimization: If we know the target application name, skip apps that clearly don't match.
             # This avoids traversing/querying unrelated apps (which can be slow, e.g. gnome-shell).
             target_name = self.window_system.focused_applicaiton_name
-            if target_name:
-                try:
-                    app_name = window.get_name()
-                except Exception:
-                    continue
-                    
+            if target_name and app_name:
                 # Normalize names for comparison (remove spaces/hyphens, lower case)
                 # e.g. "brave-browser" vs "Brave Browser"
-                if app_name:
-                    n_app = app_name.lower().replace("-", "").replace(" ", "").replace("_", "")
-                    n_target = target_name.lower().replace("-", "").replace(" ", "").replace("_", "")
-                    
-                    if n_target not in n_app and n_app not in n_target:
-                         continue
+                n_app = app_name.lower().replace("-", "").replace(" ", "").replace("_", "")
+                n_target = target_name.lower().replace("-", "").replace(" ", "").replace("_", "")
+                
+                if n_target not in n_app and n_app not in n_target:
+                     continue
 
             # Gnome creates a mutter application that is also focused.
             # This is not what we want, so we are skipping it.
@@ -335,11 +339,7 @@ class AtspiBackend(HintsBackend):
                             return current_window
 
                         # Fallback logic for Flatpaks where PID namespace differs
-                        if (
-                            target_name
-                            and app_name
-                            and (n_target in n_app or n_app in n_target)
-                        ):
+                        if n_app and n_target and (n_target in n_app or n_app in n_target):
                             return current_window # Early return on match!
                 except Exception as e:
                     logger.debug("Error checking window state/PID: %s", e)
