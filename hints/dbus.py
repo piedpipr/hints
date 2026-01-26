@@ -32,18 +32,19 @@ class DBusHintsProxy:
                 )   # type: ignore
 
     def position_window(self, x, y, monitor, pid):
-        self.proxy.call_sync(
-                    method_name = "PositionWindow",
-                    parameters = GLib.Variant.new_tuple(
-                        GLib.Variant.new_int32(x),
-                        GLib.Variant.new_int32(y),
-                        GLib.Variant.new_int32(monitor),
-                        GLib.Variant.new_int32(pid),
-                    ),
-                    flags = Gio.DBusCallFlags.NONE,
-                    timeout_msec = 500,
-                    cancellable = None
-                )
+        try:
+            self.proxy.call_sync(
+                        method_name = "PositionWindow",
+                        parameters = GLib.Variant.new_tuple(
+                            GLib.Variant.new_int32(x),
+                            GLib.Variant.new_int32(y),
+                            GLib.Variant.new_int32(monitor),
+                            GLib.Variant.new_int32(pid),
+                        ),
+                        flags = Gio.DBusCallFlags.NONE,
+                        timeout_msec = 500,
+                        cancellable = None
+                    )
         except Exception:
             pass
 
