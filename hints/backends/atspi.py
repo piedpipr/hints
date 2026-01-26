@@ -367,5 +367,7 @@ class AtspiBackend(HintsBackend):
 
             if not children:
                 raise AccessibleChildrenNotFoundError(window)
+        else:
+            raise AccessibleChildrenNotFoundError(None)
 
         return children
