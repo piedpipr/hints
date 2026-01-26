@@ -296,6 +296,14 @@ class AtspiBackend(HintsBackend):
             # This is not what we want, so we are skipping it.
             if "mutter-x11-frames" in window.get_description():
                 continue
+            # Optimization: If we know the target application name, skip apps that clearly don't match.
+            # This avoids traversing/querying unrelated apps (which can be slow, e.g. gnome-shell).
+            target_name = self.window_system.focused_applicaiton_name
+            if target_name:
+                app_name = window.get_name()
+                if app_name and target_name.lower() not in app_name.lower() and app_name.lower() not in target_name.lower():
+                     continue
+
             for window_index in range(window.get_child_count()):
                 current_window = window.get_child_at_index(window_index)
                 # Some hidden windows that are minimized to status trays
@@ -313,9 +321,10 @@ class AtspiBackend(HintsBackend):
 
                         # Fallback logic for Flatpaks where PID namespace differs
                         if (
-                            self.window_system.focused_applicaiton_name
-                            and window.get_name().lower()
-                            in self.window_system.focused_applicaiton_name.lower()
+                            target_name
+                            and app_name
+                            and app_name.lower()
+                            in target_name.lower()
                         ):
                             active_window_candidate = current_window
                 except Exception as e:
