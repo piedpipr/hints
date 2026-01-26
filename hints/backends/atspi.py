@@ -302,22 +302,29 @@ class AtspiBackend(HintsBackend):
                 # (like discord) will still have the Atspi.StateType.Active
                 # state, so the pid from the window manger allows us to filter
                 # out such applications.
-                if current_window.get_state_set().contains(Atspi.StateType.ACTIVE):
-                    if (
-                        current_window.get_process_id()
-                        == self.window_system.focused_window_pid
-                    ):
-                        return current_window
+                try:
+                    state_set = current_window.get_state_set()
+                    if state_set.contains(Atspi.StateType.ACTIVE):
+                        if (
+                            current_window.get_process_id()
+                            == self.window_system.focused_window_pid
+                        ):
+                            return current_window
 
-                    # Fallback logic for Flatpaks where PID namespace differs
-                    if (
-                        self.window_system.focused_applicaiton_name
-                        and window.get_name().lower()
-                        in self.window_system.focused_applicaiton_name.lower()
-                    ):
-                        active_window_candidate = current_window
+                        # Fallback logic for Flatpaks where PID namespace differs
+                        if (
+                            self.window_system.focused_applicaiton_name
+                            and window.get_name().lower()
+                            in self.window_system.focused_applicaiton_name.lower()
+                        ):
+                            active_window_candidate = current_window
+                except Exception as e:
+                    logger.debug("Error checking window state/PID: %s", e)
+                    continue
 
         return active_window_candidate
+
+
 
     def get_children(
         self,
